@@ -1,0 +1,400 @@
+// ADAPT Technologies — relational data model
+// PostgreSQL via Prisma ORM.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Identity & authorization
+// ---------------------------------------------------------------------------
+
+enum RoleName {
+  SUPER_ADMIN
+  CONTENT_ADMIN
+  COMMS_ADMIN
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        RoleName @unique
+  description String?
+  permissions String[] @default([])
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model User {
+  id                    String                @id @default(cuid())
+  email                 String                @unique
+  passwordHash          String
+  name                  String
+  active                Boolean               @default(true)
+  lastLoginAt           DateTime?
+  roleId                String
+  role                  Role                  @relation(fields: [roleId], references: [id])
+  mediaUploads          Media[]               @relation("MediaUploader")
+  activityLogs          ActivityLog[]
+  updatedSettings       SiteSetting[]
+  assignedConversations Conversation[]        @relation("ConversationAssignee")
+  conversationMessages  ConversationMessage[] @relation("ConversationMessageAuthor")
+  securityAlerts        SecurityAlert[]       @relation("SecurityAlertUser")
+  acknowledgedAlerts    SecurityAlert[]       @relation("SecurityAlertAcknowledger")
+  securitySettings      SecuritySetting[]     @relation("SecuritySettingUpdater")
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+
+  @@index([roleId])
+}
+
+// ---------------------------------------------------------------------------
+// Content models
+// ---------------------------------------------------------------------------
+
+enum ProjectStatus {
+  IDEA
+  RESEARCH
+  PROTOTYPE
+  DEVELOPMENT
+  TESTING
+  BETA
+  PRODUCTION
+  COMPLETED
+}
+
+model Project {
+  id           String        @id @default(cuid())
+  slug         String        @unique
+  title        String
+  summary      String
+  description  String
+  status       ProjectStatus @default(IDEA)
+  category     String        @default("Technology")
+  technologies String[]      @default([])
+  coverImage   String?
+  gallery      Json?
+  videoUrl     String?
+  externalUrl  String?
+  featured     Boolean       @default(false)
+  published    Boolean       @default(false)
+  publishedAt  DateTime?
+  order        Int           @default(0)
+  views        Int           @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([published, featured])
+  @@index([status])
+}
+
+enum AchievementCategory {
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+  MILESTONE
+  AWARD
+  PRODUCT_LAUNCH
+  PARTNERSHIP
+  COMPANY_NEWS
+}
+
+model Achievement {
+  id          String              @id @default(cuid())
+  slug        String              @unique
+  title       String
+  description String
+  content     String
+  category    AchievementCategory @default(MONTHLY)
+  occurredOn  DateTime
+  coverImage  String?
+  gallery     Json?
+  videoUrl    String?
+  externalUrl String?
+  author      String?
+  featured    Boolean             @default(false)
+  published   Boolean             @default(false)
+  publishedAt DateTime?
+  order       Int                 @default(0)
+  views       Int                 @default(0)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@index([published, featured])
+  @@index([category, published])
+}
+
+model Announcement {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  title       String
+  body        String
+  pinned      Boolean   @default(false)
+  published   Boolean   @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([published, pinned])
+}
+
+// ---------------------------------------------------------------------------
+// Inbound communications
+// ---------------------------------------------------------------------------
+
+enum InquiryType {
+  GENERAL
+  BUSINESS
+  PARTNERSHIP
+  INVESTMENT
+  TECHNOLOGY
+  MEDIA
+  CAREERS
+  OTHER
+}
+
+enum MessageStatus {
+  NEW
+  READ
+  RESPONDED
+  CLOSED
+}
+
+model ContactMessage {
+  id           String        @id @default(cuid())
+  name         String
+  email        String
+  phone        String?
+  organization String?
+  subject      String
+  message      String
+  inquiryType  InquiryType?
+  status       MessageStatus @default(NEW)
+  readAt       DateTime?
+  ip           String?
+  userAgent    String?
+  createdAt    DateTime      @default(now())
+
+  @@index([status, createdAt])
+}
+
+enum InvestorType {
+  ANGEL_INVESTOR
+  VENTURE_CAPITAL
+  CORPORATE_INVESTOR
+  STRATEGIC_PARTNER
+  TECHNOLOGY_PARTNER
+  OTHER
+}
+
+enum InvestorStatus {
+  NEW
+  CONTACTED
+  IN_DISCUSSION
+  FOLLOW_UP
+  CLOSED
+}
+
+model InvestorInquiry {
+  id           String         @id @default(cuid())
+  name         String
+  organization String?
+  email        String
+  phone        String?
+  country      String?
+  investorType InvestorType   @default(OTHER)
+  interest     String?
+  message      String?
+  status       InvestorStatus @default(NEW)
+  ip           String?
+  userAgent    String?
+  createdAt    DateTime       @default(now())
+
+  @@index([status, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Media & settings
+// ---------------------------------------------------------------------------
+
+model Media {
+  id           String   @id @default(cuid())
+  filename     String
+  originalName String
+  mimeType     String
+  size         Int
+  width        Int?
+  height       Int?
+  url          String
+  alt          String?
+  uploadedById String?
+  uploadedBy   User?    @relation("MediaUploader", fields: [uploadedById], references: [id])
+  createdAt    DateTime @default(now())
+
+  @@index([mimeType])
+}
+
+model SiteSetting {
+  key         String   @id
+  value       Json
+  updatedById String?
+  updatedBy   User?    @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+  updatedAt   DateTime @updatedAt
+}
+
+enum PageViewSource {
+  WEB
+  API
+}
+
+model PageView {
+  id        String         @id @default(cuid())
+  path      String
+  referrer  String?
+  source    PageViewSource @default(WEB)
+  createdAt DateTime       @default(now())
+
+  @@index([path, createdAt])
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  entity    String?
+  entityId  String?
+  meta      Json?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([entity, entityId])
+}
+
+// ---------------------------------------------------------------------------
+// Founder console — two-way communications
+// ---------------------------------------------------------------------------
+
+enum ConversationKind {
+  INVESTOR
+  CONTACT
+}
+
+enum ConversationStatus {
+  OPEN
+  PENDING
+  CLOSED
+  ARCHIVED
+}
+
+enum SenderRole {
+  INVESTOR
+  ADMIN
+  SYSTEM
+}
+
+model Conversation {
+  id                   String                @id @default(cuid())
+  kind                 ConversationKind      @default(INVESTOR)
+  status               ConversationStatus    @default(OPEN)
+  subject              String
+  // Participant identity (the investor / contact who started the thread).
+  participantName      String
+  participantEmail     String
+  participantPhone     String?
+  participantOrg       String?
+  participantCountry   String?
+  investorType         String?
+  // Link back to the originating one-way submission, if any.
+  inquiryId            String?               @unique
+  investorInquiryId    String?               @unique
+  // Opaque token for the (future) private investor portal — no auth needed to reply.
+  portalToken          String                @unique @default(cuid())
+  assignedToId         String?
+  assignedTo           User?                 @relation("ConversationAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  lastMessageAt        DateTime              @default(now())
+  unreadForAdmin       Boolean               @default(true)
+  unreadForParticipant Boolean               @default(false)
+  pinned               Boolean               @default(false)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  messages             ConversationMessage[]
+
+  @@index([status, lastMessageAt])
+  @@index([kind, lastMessageAt])
+  @@index([participantEmail])
+}
+
+model ConversationMessage {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderRole     SenderRole
+  senderName     String
+  senderEmail    String?
+  body           String
+  // Whether an outbound email was actually dispatched for this message.
+  emailSent      Boolean      @default(false)
+  // Admin-only internal note (never emailed, hidden from participant portal).
+  internal       Boolean      @default(false)
+  authorId       String?
+  author         User?        @relation("ConversationMessageAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Founder console — security
+// ---------------------------------------------------------------------------
+
+enum SecurityAlertSeverity {
+  INFO
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum SecurityAlertStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+  DISMISSED
+}
+
+model SecurityAlert {
+  id               String                @id @default(cuid())
+  severity         SecurityAlertSeverity @default(LOW)
+  status           SecurityAlertStatus   @default(OPEN)
+  type             String
+  title            String
+  detail           String?
+  ip               String?
+  userId           String?
+  user             User?                 @relation("SecurityAlertUser", fields: [userId], references: [id], onDelete: SetNull)
+  meta             Json?
+  acknowledgedById String?
+  acknowledgedBy   User?                 @relation("SecurityAlertAcknowledger", fields: [acknowledgedById], references: [id], onDelete: SetNull)
+  acknowledgedAt   DateTime?
+  createdAt        DateTime              @default(now())
+
+  @@index([status, createdAt])
+  @@index([severity, createdAt])
+  @@index([type, createdAt])
+}
+
+model SecuritySetting {
+  key         String   @id
+  value       Json
+  updatedById String?
+  updatedBy   User?    @relation("SecuritySettingUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+  updatedAt   DateTime @updatedAt
+}

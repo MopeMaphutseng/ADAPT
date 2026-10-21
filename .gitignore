@@ -1,0 +1,44 @@
+# Dependencies
+/node_modules
+
+# Next.js
+/.next/
+/out/
+next-env.d.ts
+tsconfig.tsbuildinfo
+
+# Production
+/build
+
+# Environment (never commit secrets)
+.env
+.env.local
+.env*.local
+
+# Uploads served statically (content is user/media, not source)
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# Oversized source media (exceeds GitHub's 100 MB per-file limit and free LFS
+# quota). Host this large file externally (YouTube/S3/CDN) and reference its URL.
+/public/media/PULA MALIBOHO.mp4
+/public/media/*.mp4.tmp
+
+# Prisma
+/prisma/migrations/**/migration_lock.toml.bak
+
+# Logs / OS
+*.log
+npm-debug.log*
+.DS_Store
+
+# Test artifacts
+/coverage
+/test-results
+/playwright-report
+
+# Editor / tooling
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.swp
