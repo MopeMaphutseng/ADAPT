@@ -1,0 +1,6 @@
+# Never upload the large local media tree when deploying from the CLI.
+# Production media is served from the Git LFS-tracked files / external hosting.
+public/media/PULA MALIBOHO.mp4
+.git
+node_modules
+.next
