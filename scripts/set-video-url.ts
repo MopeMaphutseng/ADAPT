@@ -2,9 +2,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-const VIDEO_URL =
-  process.env.VIDEO_URL ??
-  "https://tkdedxeelmepeftp.public.blob.vercel-storage.com/PULA%20MALIBOHO-KM1lkGBd9fqp4hPm6zi0PvTbdJYjwY.mp4";
+const VIDEO_URL = process.env.VIDEO_URL ?? "/media/pula-maliboho.mp4";
 
 async function main() {
   const updated = await prisma.project.updateMany({
