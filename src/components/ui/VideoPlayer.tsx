@@ -1,13 +1,26 @@
 import { Volume2, Video as VideoIcon } from "lucide-react";
 
 /**
- * True for media stored locally under /public (served by this site), as
- * opposed to an external URL (YouTube, Vimeo, Drive, …) which should be
- * linked out to instead of embedded.
+ * True for media we can embed directly in a player: local files under /public
+ * (served by this site) as well as direct video-file URLs hosted elsewhere
+ * (e.g. Cloudflare R2, Vercel Blob). Page URLs (YouTube, Vimeo, Drive, …)
+ * return false and are linked out to instead of embedded.
  */
 export function isLocalVideo(url: string | null | undefined): url is string {
   if (!url) return false;
-  return url.startsWith("/") || url.startsWith("/media") || url.includes("/media/");
+  if (url.startsWith("/")) return true;
+  try {
+    const parsed = new URL(url);
+    if (/\.(mp4|webm|m4v|mov|ogv)$/i.test(parsed.pathname)) return true;
+    const host = parsed.hostname;
+    return (
+      host.endsWith(".r2.dev") ||
+      host.includes("r2.cloudflarestorage.com") ||
+      host.includes("blob.vercel-storage.com")
+    );
+  } catch {
+    return url.includes("/media/");
+  }
 }
 
 /**
