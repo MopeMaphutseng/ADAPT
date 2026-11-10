@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getSessionUser } from "@/lib/session";
 import { prisma } from "@/lib/db";
+import { passwordFingerprint } from "@/lib/password";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { SessionExpired } from "@/components/admin/SessionExpired";
 
@@ -23,7 +24,12 @@ export default async function AdminLayout({
     where: { id: session.sub },
     include: { role: true },
   });
-  if (!user || !user.active) {
+  if (
+    !user ||
+    !user.active ||
+    !session.pv ||
+    session.pv !== passwordFingerprint(user.passwordHash)
+  ) {
     return <SessionExpired />;
   }
 

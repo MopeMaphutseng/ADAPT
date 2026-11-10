@@ -4,6 +4,8 @@ import { json, handleRouteError, requireAdminUser, ApiError } from "@/lib/api-au
 import { assertSameOrigin } from "@/lib/csrf";
 import { logActivity } from "@/lib/audit";
 import { hashPassword, verifyPassword } from "@/lib/password";
+import { sessionCookieOptions } from "@/lib/session";
+import { sessionCookieName } from "@/lib/env";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -84,7 +86,11 @@ export async function PATCH(req: NextRequest) {
       data: { passwordHash: await hashPassword(parsed.data.newPassword) },
     });
     await logActivity({ userId: user.id, action: "user.password_changed", entity: "user", entityId: user.id });
-    return json({ ok: true, data: { id: user.id } });
+    // The password fingerprint in the current token is now stale; clear it so
+    // the browser is forced back through the login flow.
+    const res = json({ ok: true, data: { id: user.id } });
+    res.cookies.set(sessionCookieName(), "", { ...sessionCookieOptions(), maxAge: 0 });
+    return res;
   } catch (err) {
     return handleRouteError(err);
   }

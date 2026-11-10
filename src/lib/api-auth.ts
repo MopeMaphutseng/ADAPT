@@ -3,6 +3,7 @@ import { ZodError } from "zod";
 import { verifySessionToken, SessionPayload } from "@/lib/session";
 import { sessionCookieName } from "@/lib/env";
 import { prisma } from "@/lib/db";
+import { passwordFingerprint } from "@/lib/password";
 import type { Role, User } from "@prisma/client";
 
 export class ApiError extends Error {
@@ -103,7 +104,12 @@ export async function requireAdminUser(
     where: { id: session.sub },
     include: { role: true },
   });
-  if (!user || !user.active) {
+  if (
+    !user ||
+    !user.active ||
+    !session.pv ||
+    session.pv !== passwordFingerprint(user.passwordHash)
+  ) {
     throw new ApiError(401, "Authentication required.");
   }
   if (permission) {

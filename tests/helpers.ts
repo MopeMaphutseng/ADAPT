@@ -2,7 +2,7 @@ import "dotenv/config";
 import { beforeAll, afterAll } from "vitest";
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { hashPassword } from "@/lib/password";
+import { hashPassword, passwordFingerprint } from "@/lib/password";
 import { createSessionToken } from "@/lib/session";
 import { sessionCookieName } from "@/lib/env";
 
@@ -73,7 +73,14 @@ export async function seedRoleUser(
 }
 
 export async function tokenFor(userId: string, role: string, email = "admin@adapt.test") {
-  return createSessionToken({ sub: userId, email, name: "Test", role });
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  return createSessionToken({
+    sub: userId,
+    email,
+    name: "Test",
+    role,
+    pv: user ? passwordFingerprint(user.passwordHash) : undefined,
+  });
 }
 
 /** Build a NextRequest with a session cookie + CSRF headers for admin routes. */

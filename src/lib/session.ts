@@ -9,6 +9,8 @@ export interface SessionPayload {
   email: string;
   name: string;
   role: string;
+  /** Fingerprint of the user's password hash at issue time. */
+  pv?: string;
 }
 
 const enc = () => new TextEncoder().encode(sessionSecret());
@@ -16,7 +18,12 @@ const cookieName = () => sessionCookieName();
 
 export async function createSessionToken(payload: SessionPayload): Promise<string> {
   const iat = Math.floor(Date.now() / 1000);
-  return new SignJWT({ email: payload.email, name: payload.name, role: payload.role })
+  return new SignJWT({
+    email: payload.email,
+    name: payload.name,
+    role: payload.role,
+    ...(payload.pv ? { pv: payload.pv } : {}),
+  })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(payload.sub)
     .setIssuedAt(iat)
@@ -33,6 +40,7 @@ export async function verifySessionToken(token: string): Promise<SessionPayload 
       email: String(payload.email ?? ""),
       name: String(payload.name ?? ""),
       role: String(payload.role ?? ""),
+      pv: typeof payload.pv === "string" ? payload.pv : undefined,
     };
   } catch {
     return null;

@@ -32,6 +32,17 @@ describe("session tokens", () => {
     expect(payload?.role).toBe("SUPER_ADMIN");
   });
 
+  it("carries a password fingerprint", async () => {
+    const token = await createSessionToken({
+      sub: "u1",
+      email: "a@b.c",
+      name: "A",
+      role: "SUPER_ADMIN",
+      pv: "fingerprint-value",
+    });
+    expect((await verifySessionToken(token))?.pv).toBe("fingerprint-value");
+  });
+
   it("rejects tampered tokens", async () => {
     const token = await createSessionToken({ sub: "u1", email: "a@b.c", name: "A", role: "SUPER_ADMIN" });
     const tampered = token.slice(0, -2) + (token.endsWith("ab") ? "cd" : "aa");
@@ -147,6 +158,31 @@ describe("GET /api/auth/me", () => {
     const res = await meGET(adminRequest(`${BASE}/api/auth/me`, token, { method: "GET" }));
     const body = await res.json();
     expect(body.data).toBeNull();
+  });
+});
+
+describe("session revocation on password change", () => {
+  it("rejects an admin API call when the password hash changed", async () => {
+    const { user } = await seedAdmin("revoke@adapt.test", "initial-password-123");
+    const token = await tokenFor(user.id, "SUPER_ADMIN", "revoke@adapt.test");
+
+    const before = await projectsGET(
+      adminRequest(`${BASE}/api/admin/projects`, token, { method: "GET" }),
+    );
+    expect(before.status).toBe(200);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash: await hashPassword("changed-password-123") },
+    });
+
+    const stale = await projectsGET(
+      adminRequest(`${BASE}/api/admin/projects`, token, { method: "GET" }),
+    );
+    expect(stale.status).toBe(401);
+
+    const me = await meGET(adminRequest(`${BASE}/api/auth/me`, token, { method: "GET" }));
+    expect((await me.json()).data).toBeNull();
   });
 });
 

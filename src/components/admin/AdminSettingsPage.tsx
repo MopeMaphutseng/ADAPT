@@ -34,7 +34,8 @@ export function AdminSettingsPage() {
         body: { currentPassword: form.currentPassword, newPassword: form.newPassword },
       });
       setForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
-      setSuccess("Password updated. Use it next time you sign in.");
+      setSuccess("Password updated. Please sign in again.");
+      window.setTimeout(() => window.location.assign("/admin/login"), 1200);
     } catch (err) {
       setError(err instanceof ClientError ? err.message : "Could not update password.");
     } finally {

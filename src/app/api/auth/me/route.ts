@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { readSession } from "@/lib/api-auth";
 import { json } from "@/lib/api-auth";
+import { passwordFingerprint } from "@/lib/password";
 
 export const runtime = "nodejs";
 
@@ -15,7 +16,12 @@ export async function GET(req: NextRequest) {
     where: { id: session.sub },
     include: { role: true },
   });
-  if (!user || !user.active) {
+  if (
+    !user ||
+    !user.active ||
+    !session.pv ||
+    session.pv !== passwordFingerprint(user.passwordHash)
+  ) {
     return json({ ok: true, data: null });
   }
   return json({

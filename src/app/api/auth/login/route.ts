@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
-import { verifyPassword } from "@/lib/password";
+import { verifyPassword, passwordFingerprint } from "@/lib/password";
 import { createSessionToken, sessionCookieOptions } from "@/lib/session";
 import { json, handleRouteError } from "@/lib/api-auth";
 import { assertSameOrigin } from "@/lib/csrf";
@@ -119,6 +119,7 @@ export async function POST(req: NextRequest) {
       email: user.email,
       name: user.name,
       role: user.role.name,
+      pv: passwordFingerprint(user.passwordHash),
     });
 
     await logActivity({ action: "auth.login", userId: user.id, meta: { email: emailKey }, ip });
