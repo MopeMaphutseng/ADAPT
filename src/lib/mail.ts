@@ -71,6 +71,7 @@ export async function sendNotificationMail(opts: MailOptions): Promise<boolean> 
       text: opts.text,
       html: opts.html,
     });
+    console.log("[mail:sent] to=%s subject=%s", to, subject);
     return true;
   } catch (err) {
     console.error("[mail:error]", err);
