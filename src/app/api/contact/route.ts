@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
       console.error("[comms] failed to open contact conversation", err),
     );
 
-    void contactNotification(
+    await contactNotification(
       `New Contact Message — ${d.subject}`,
       `From: ${d.name} <${d.email}>\nPhone: ${d.phone || "—"}\nOrganization: ${d.organization || "—"}\nType: ${d.inquiryType || "General"}\n\n${d.message}`,
       `<p><strong>${escapeHtml(d.name)}</strong> &lt;${escapeHtml(d.email)}&gt;</p><p>Phone: ${escapeHtml(d.phone || "—")} · Organization: ${escapeHtml(d.organization || "—")} · Type: ${escapeHtml(d.inquiryType || "General")}</p><hr/><p>${escapeHtml(d.message).replace(/\n/g, "<br/>")}</p>`,
