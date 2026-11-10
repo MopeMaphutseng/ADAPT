@@ -1,10 +1,16 @@
+import { randomBytes } from "crypto";
 import { prisma } from "@/lib/db";
-import { sendNotificationMail, notificationAddress } from "@/lib/mail";
+import { sendNotificationMail, notificationAddress, escapeHtml } from "@/lib/mail";
 import { getEnv, siteUrl } from "@/lib/env";
 import { getSecuritySettings } from "@/lib/security/settings";
 import type { Conversation, ConversationMessage } from "@prisma/client";
 
 export type ConversationWithMessages = Conversation & { messages: ConversationMessage[] };
+
+/** 256-bit, URL-safe portal token (replaces the default cuid for new threads). */
+export function newPortalToken(): string {
+  return randomBytes(32).toString("base64url");
+}
 
 /**
  * Ensures an investor inquiry has a corresponding conversation thread.
@@ -33,6 +39,7 @@ export async function ensureInvestorConversation(inquiryId: string): Promise<Con
       participantCountry: inquiry.country,
       investorType: inquiry.investorType,
       investorInquiryId: inquiryId,
+      portalToken: newPortalToken(),
       messages: {
         create: {
           senderRole: "INVESTOR",
@@ -65,6 +72,7 @@ export async function ensureContactConversation(messageId: string): Promise<Conv
       participantPhone: message.phone,
       participantOrg: message.organization,
       inquiryId: messageId,
+      portalToken: newPortalToken(),
       messages: {
         create: {
           senderRole: "INVESTOR",
@@ -115,7 +123,7 @@ export async function replyToConversation(input: ReplyInput): Promise<ReplyResul
       to: conversation.participantEmail,
       subject: `Re: ${conversation.subject}`,
       text: `${input.body}\n\n—\n${input.authorName}\nADAPT Technologies${portalLine}`,
-      html: `<p>${input.body.replace(/</g, "&lt;").replace(/\n/g, "<br/>")}</p><hr/><p><strong>${input.authorName}</strong><br/>ADAPT Technologies</p>${
+      html: `<p>${escapeHtml(input.body).replace(/\n/g, "<br/>")}</p><hr/><p><strong>${escapeHtml(input.authorName)}</strong><br/>ADAPT Technologies</p>${
         settings.investorPortalEnabled
           ? `<p><a href="${siteUrl()}/investors/portal/${conversation.portalToken}">Continue this conversation</a></p>`
           : ""
@@ -193,9 +201,7 @@ export async function addParticipantMessage(
     to: notificationAddress(),
     subject: `New reply from ${conversation.participantName} — ${conversation.subject}`,
     text: `${conversation.participantName} replied:\n\n${body}`,
-    html: `<p><strong>${conversation.participantName}</strong> replied:</p><p>${body
-      .replace(/</g, "&lt;")
-      .replace(/\n/g, "<br/>")}</p>`,
+    html: `<p><strong>${escapeHtml(conversation.participantName)}</strong> replied:</p><p>${escapeHtml(body).replace(/\n/g, "<br/>")}</p>`,
   });
 
   return message;

@@ -5,6 +5,8 @@ import { assertSameOrigin } from "@/lib/csrf";
 import { achievementSchema, parseDateParam } from "@/lib/validation";
 import { uniqueSlug, slugify } from "@/lib/slugify";
 import { logActivity } from "@/lib/audit";
+import { enumParam, textParam } from "@/lib/query";
+import { AchievementCategory } from "@prisma/client";
 
 export const runtime = "nodejs";
 
@@ -12,11 +14,11 @@ export async function GET(req: NextRequest) {
   try {
     await requireAdminUser(req, "content.manage");
     const url = new URL(req.url);
-    const category = url.searchParams.get("category") ?? undefined;
-    const search = url.searchParams.get("q")?.trim();
+    const category = enumParam(url.searchParams.get("category"), Object.values(AchievementCategory));
+    const search = textParam(url.searchParams.get("q"));
     const achievements = await prisma.achievement.findMany({
       where: {
-        ...(category ? { category: category as never } : {}),
+        ...(category ? { category } : {}),
         ...(search
           ? { OR: [{ title: { contains: search, mode: "insensitive" } }, { description: { contains: search, mode: "insensitive" } }] }
           : {}),

@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import { getSessionUser } from "@/lib/session";
 import { prisma } from "@/lib/db";
 import { AdminShell } from "@/components/admin/AdminShell";
+import { SessionExpired } from "@/components/admin/SessionExpired";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false, nocache: true },
+};
 
 export default async function AdminLayout({
   children,
@@ -9,8 +15,6 @@ export default async function AdminLayout({
 }) {
   const session = await getSessionUser();
 
-  // No session → render the page unwrapped (login page). Middleware guards
-  // every other /admin route and APIs enforce auth server-side regardless.
   if (!session) {
     return <>{children}</>;
   }
@@ -20,7 +24,7 @@ export default async function AdminLayout({
     include: { role: true },
   });
   if (!user || !user.active) {
-    return <>{children}</>;
+    return <SessionExpired />;
   }
 
   const [unreadMessages, unreadInvestors, unreadSecurity, unreadCommunications] = await Promise.all([

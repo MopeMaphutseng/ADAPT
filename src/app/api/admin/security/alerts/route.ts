@@ -5,6 +5,8 @@ import { assertSameOrigin } from "@/lib/csrf";
 import { logActivity } from "@/lib/audit";
 import { openAlertCount } from "@/lib/security/alerts";
 import { z } from "zod";
+import { enumParam } from "@/lib/query";
+import { SecurityAlertSeverity, SecurityAlertStatus } from "@prisma/client";
 
 export const runtime = "nodejs";
 
@@ -12,13 +14,13 @@ export async function GET(req: NextRequest) {
   try {
     await requireAdminUser(req, "security.manage");
     const url = new URL(req.url);
-    const status = url.searchParams.get("status")?.trim() || undefined;
-    const severity = url.searchParams.get("severity")?.trim() || undefined;
+    const status = enumParam(url.searchParams.get("status"), Object.values(SecurityAlertStatus));
+    const severity = enumParam(url.searchParams.get("severity"), Object.values(SecurityAlertSeverity));
 
     const alerts = await prisma.securityAlert.findMany({
       where: {
-        ...(status ? { status: status as never } : {}),
-        ...(severity ? { severity: severity as never } : {}),
+        ...(status ? { status } : {}),
+        ...(severity ? { severity } : {}),
       },
       orderBy: { createdAt: "desc" },
       take: 200,

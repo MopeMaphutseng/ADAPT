@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { json, handleRouteError } from "@/lib/api-auth";
 import { assertSameOrigin } from "@/lib/csrf";
+import { rateLimit, ipFromRequest } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -14,6 +15,10 @@ const trackSchema = z.object({
 export async function POST(req: NextRequest) {
   try {
     assertSameOrigin(req);
+    const ip = ipFromRequest(req);
+    const rl = rateLimit(`track:${ip}`, 120, 60 * 1000);
+    if (!rl.allowed) return json({ ok: true }, 429);
+
     const body = await req.json().catch(() => null);
     const parsed = trackSchema.safeParse(body);
     if (!parsed.success) return json({ ok: true });

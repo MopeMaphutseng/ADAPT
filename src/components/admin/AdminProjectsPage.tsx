@@ -7,6 +7,7 @@ import { api, apiGet, ClientError } from "@/lib/client";
 import { PublishState } from "@/components/ui/Cards";
 import { PROJECT_STATUSES } from "@/lib/constants";
 import type { Project } from "@prisma/client";
+import { safeHref } from "@/lib/safe-url";
 
 export function AdminProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -92,7 +93,7 @@ export function AdminProjectsPage() {
                     <td className="table-td">
                       <div className="flex justify-end gap-1">
                         {p.externalUrl ? (
-                          <a href={p.externalUrl} target="_blank" rel="noopener noreferrer" className="rounded-lg p-2 text-slate-400 hover:text-white" aria-label="Open external link">
+                          <a href={safeHref(p.externalUrl, "#")} target="_blank" rel="noopener noreferrer" className="rounded-lg p-2 text-slate-400 hover:text-white" aria-label="Open external link">
                             <ExternalLink className="h-4 w-4" />
                           </a>
                         ) : null}

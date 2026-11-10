@@ -6,6 +6,8 @@ import { projectSchema, parseDateParam } from "@/lib/validation";
 import { uniqueSlug } from "@/lib/slugify";
 import { slugify } from "@/lib/slugify";
 import { logActivity } from "@/lib/audit";
+import { enumParam, textParam } from "@/lib/query";
+import { ProjectStatus } from "@prisma/client";
 
 export const runtime = "nodejs";
 
@@ -14,12 +16,12 @@ export async function GET(req: NextRequest) {
     await requireAdminUser(req, "content.manage");
     const url = new URL(req.url);
     const featured = url.searchParams.get("featured") === "true";
-    const status = url.searchParams.get("status") ?? undefined;
-    const search = url.searchParams.get("q")?.trim();
+    const status = enumParam(url.searchParams.get("status"), Object.values(ProjectStatus));
+    const search = textParam(url.searchParams.get("q"));
     const projects = await prisma.project.findMany({
       where: {
         ...(featured ? { featured: true } : {}),
-        ...(status ? { status: status as never } : {}),
+        ...(status ? { status } : {}),
         ...(search
           ? { OR: [{ title: { contains: search, mode: "insensitive" } }, { summary: { contains: search, mode: "insensitive" } }] }
           : {}),

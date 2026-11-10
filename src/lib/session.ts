@@ -57,7 +57,7 @@ export function sessionCookieOptions() {
   return {
     httpOnly: true,
     secure: isProduction,
-    sameSite: "lax" as const,
+    sameSite: "strict" as const,
     path: "/",
     maxAge: SESSION_TTL_SECONDS,
   };

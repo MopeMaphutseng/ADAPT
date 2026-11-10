@@ -3,6 +3,7 @@ import { ImageOff, ArrowRight, Play } from "lucide-react";
 import { PROJECT_STATUSES, ACHIEVEMENT_CATEGORIES } from "@/lib/constants";
 import type { Project, Achievement } from "@prisma/client";
 import { VideoBackdrop, isLocalVideo } from "@/components/ui/VideoPlayer";
+import { safeHref } from "@/lib/safe-url";
 
 function VideoBadge() {
   return (
@@ -59,6 +60,7 @@ export function ProjectCard({ project }: { project: Project }) {
   const statusLabel =
     PROJECT_STATUSES.find((s) => s.value === project.status)?.label ?? project.status;
   const href = `/projects/${project.slug}`;
+  const external = project.externalUrl ? safeHref(project.externalUrl, "") : "";
   return (
     <article className="card hud-frame card-grid group flex h-full flex-col overflow-hidden !p-0">
       <Link href={href} aria-label={project.title} className="block">
@@ -118,11 +120,11 @@ export function ProjectCard({ project }: { project: Project }) {
         <div className="mt-5 flex items-center justify-between border-t border-white/[0.08] pt-4">
           <span className="font-mono text-[0.7rem] tracking-widest text-slate-400">INSPECT</span>
           <Link
-            href={project.externalUrl ?? href}
-            {...(project.externalUrl ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+            href={external || href}
+            {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-cyanx transition-colors hover:text-white"
           >
-            {project.externalUrl ? "Demo" : "View"}
+            {external ? "Demo" : "View"}
             <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
           </Link>
         </div>

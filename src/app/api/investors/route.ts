@@ -4,7 +4,7 @@ import { json, handleRouteError } from "@/lib/api-auth";
 import { assertSameOrigin } from "@/lib/csrf";
 import { rateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { investorSchema } from "@/lib/validation";
-import { contactNotification } from "@/lib/mail";
+import { contactNotification, escapeHtml } from "@/lib/mail";
 import { ensureInvestorConversation } from "@/lib/comms/conversations";
 
 export const runtime = "nodejs";
@@ -28,6 +28,19 @@ export async function POST(req: NextRequest) {
     }
 
     const d = parsed.data;
+
+    // Durable, per-IP limit (the in-memory limiter is per-instance).
+    const hourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const recentCount = await prisma.investorInquiry.count({
+      where: { ip, createdAt: { gte: hourAgo } },
+    });
+    if (recentCount >= 15) {
+      return json(
+        { ok: false, error: "Too many submissions from your connection. Please try again later." },
+        429,
+      );
+    }
+
     const inquiry = await prisma.investorInquiry.create({
       data: {
         name: d.name,
@@ -51,7 +64,7 @@ export async function POST(req: NextRequest) {
     void contactNotification(
       `New Investor Inquiry — ${d.name}`,
       `From: ${d.name} <${d.email}>\nOrganization: ${d.organization || "—"}\nInvestor Type: ${d.investorType}\nCountry: ${d.country || "—"}\nInterest: ${d.interest || "—"}\n\n${d.message || ""}`,
-      `<p><strong>${d.name}</strong> &lt;${d.email}&gt;</p><p>Organization: ${d.organization || "—"} · Type: ${d.investorType} · Country: ${d.country || "—"}</p><p>Interest: ${d.interest || "—"}</p><hr/><p>${(d.message || "").replace(/</g, "&lt;").replace(/\n/g, "<br/>")}</p>`,
+      `<p><strong>${escapeHtml(d.name)}</strong> &lt;${escapeHtml(d.email)}&gt;</p><p>Organization: ${escapeHtml(d.organization || "—")} · Type: ${escapeHtml(d.investorType)} · Country: ${escapeHtml(d.country || "—")}</p><p>Interest: ${escapeHtml(d.interest || "—")}</p><hr/><p>${escapeHtml(d.message || "").replace(/\n/g, "<br/>")}</p>`,
     );
 
     return json({

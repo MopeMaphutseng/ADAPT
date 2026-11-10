@@ -1,6 +1,7 @@
 "use client";
 
 import type { SiteContent } from "@/lib/settings";
+import { safeHref } from "@/lib/safe-url";
 
 function LinkedInIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (
@@ -87,7 +88,9 @@ export function SocialIcon({
 }
 
 export function SocialLinks({ settings }: { settings: SiteContent }) {
-  const socials = Object.entries(settings.social).filter(([, url]) => url?.trim());
+  const socials = Object.entries(settings.social)
+    .map(([key, url]) => [key, safeHref(url, "")] as const)
+    .filter(([, url]) => Boolean(url));
   if (socials.length === 0) return null;
   const labels: Record<string, string> = {
     linkedin: "LinkedIn",

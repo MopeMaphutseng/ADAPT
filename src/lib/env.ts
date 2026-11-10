@@ -14,7 +14,8 @@ export function getEnv(name: string, fallback = ""): string {
 
 export const isProduction = process.env.NODE_ENV === "production";
 export const sessionSecret = () => getRequiredEnv("SESSION_SECRET");
-export const sessionCookieName = () => getEnv("SESSION_COOKIE", "adapt_session");
+export const sessionCookieName = () =>
+  getEnv("SESSION_COOKIE", isProduction ? "__Host-adapt_session" : "adapt_session");
 export const contactEmail = () => getEnv("CONTACT_EMAIL", "pulamaliboho@gmail.com");
 export const siteUrl = () => {
   const explicit = process.env.NEXT_PUBLIC_SITE_URL;

@@ -1,4 +1,19 @@
 import { z } from "zod";
+import { isHttpUrl, isSafeUrlOrPath } from "@/lib/safe-url";
+
+/** Empty, or an absolute http(s) URL (never javascript:/data:). */
+const httpUrlString = z
+  .string()
+  .max(500, "URL is too long.")
+  .trim()
+  .refine((v) => v === "" || isHttpUrl(v), "Enter a valid http(s) URL.");
+
+/** Empty, or a local absolute path / http(s) URL (for images and media). */
+const assetUrlString = z
+  .string()
+  .max(500, "URL is too long.")
+  .trim()
+  .refine((v) => v === "" || isSafeUrlOrPath(v), "Enter a valid URL or path.");
 
 export const contactSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters.").max(120, "Name is too long."),
@@ -39,10 +54,10 @@ export const projectSchema = z.object({
     .optional(),
   category: z.string().max(80).optional().or(z.literal("")),
   technologies: z.array(z.string()).optional().default([]),
-  coverImage: z.string().max(500).optional().or(z.literal("")),
+  coverImage: assetUrlString.optional(),
   gallery: z.unknown().optional(),
-  videoUrl: z.string().max(500).optional().or(z.literal("")),
-  externalUrl: z.string().url("Invalid URL").max(500).optional().or(z.literal("")),
+  videoUrl: assetUrlString.optional(),
+  externalUrl: httpUrlString.optional(),
   featured: z.boolean().optional(),
   published: z.boolean().optional(),
   publishedAt: z.string().optional().or(z.literal("")),
@@ -65,10 +80,10 @@ export const achievementSchema = z.object({
     .enum(["WEEKLY", "MONTHLY", "QUARTERLY", "YEARLY", "MILESTONE", "AWARD", "PRODUCT_LAUNCH", "PARTNERSHIP", "COMPANY_NEWS"])
     .optional(),
   occurredOn: z.string().min(1, "Date is required."),
-  coverImage: z.string().max(500).optional().or(z.literal("")),
+  coverImage: assetUrlString.optional(),
   gallery: z.unknown().optional(),
-  videoUrl: z.string().max(500).optional().or(z.literal("")),
-  externalUrl: z.string().url("Invalid URL").max(500).optional().or(z.literal("")),
+  videoUrl: assetUrlString.optional(),
+  externalUrl: httpUrlString.optional(),
   author: z.string().max(120).optional().or(z.literal("")),
   featured: z.boolean().optional(),
   published: z.boolean().optional(),

@@ -10,7 +10,7 @@ export const runtime = "nodejs";
 
 export async function GET(req: NextRequest) {
   try {
-    await requireAdminUser(req);
+    await requireAdminUser(req, "content.manage");
     const settings = await getAllSettings();
     return json({ ok: true, data: settings });
   } catch (err) {
@@ -25,7 +25,7 @@ const sectionSchema = z.object({
 
 export async function PUT(req: NextRequest) {
   try {
-    const user = await requireAdminUser(req);
+    const user = await requireAdminUser(req, "content.manage");
     assertSameOrigin(req);
     const body = await req.json().catch(() => null);
     const parsed = sectionSchema.safeParse(body);

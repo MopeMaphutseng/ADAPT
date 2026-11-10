@@ -19,11 +19,14 @@ export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: stri
     if (!media) throw new ApiError(404, "Media not found.");
 
     if (media.url.startsWith("/uploads/")) {
-      const abs = path.join(process.cwd(), "public", media.url.replace(/^\//, ""));
-      try {
-        await unlink(abs);
-      } catch {
-        // File already gone — nothing to do.
+      const uploadsRoot = path.resolve(process.cwd(), "public", "uploads");
+      const abs = path.resolve(process.cwd(), "public", media.url.replace(/^\//, ""));
+      if (abs.startsWith(uploadsRoot + path.sep)) {
+        try {
+          await unlink(abs);
+        } catch {
+          // File already gone — nothing to do.
+        }
       }
     }
     await prisma.media.delete({ where: { id } });

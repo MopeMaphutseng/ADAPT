@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { buildMetadata } from "@/lib/seo";
 import { PROJECT_STATUSES } from "@/lib/constants";
 import { VideoPlayer, isLocalVideo } from "@/components/ui/VideoPlayer";
+import { safeHref } from "@/lib/safe-url";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -43,6 +44,11 @@ export default async function ProjectDetailPage({
   const gallery: { url: string; alt?: string }[] = Array.isArray(project.gallery)
     ? (project.gallery as { url: string; alt?: string }[])
     : [];
+  const externalUrl = project.externalUrl ? safeHref(project.externalUrl, "") : "";
+  const externalVideo =
+    project.videoUrl && !isLocalVideo(project.videoUrl)
+      ? safeHref(project.videoUrl, "")
+      : "";
 
   return (
     <article>
@@ -71,14 +77,14 @@ export default async function ProjectDetailPage({
           <h1 className="h-display mt-4 max-w-3xl">{project.title}</h1>
           <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-300">{project.summary}</p>
           <div className="mt-6 flex flex-wrap gap-3">
-            {project.externalUrl ? (
-              <a href={project.externalUrl} target="_blank" rel="noopener noreferrer" className="btn-primary">
+            {externalUrl ? (
+              <a href={externalUrl} target="_blank" rel="noopener noreferrer" className="btn-primary">
                 Open project / demo
                 <ExternalLink className="h-4 w-4" aria-hidden="true" />
               </a>
             ) : null}
-            {project.videoUrl && !isLocalVideo(project.videoUrl) ? (
-              <a href={project.videoUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary">
+            {externalVideo ? (
+              <a href={externalVideo} target="_blank" rel="noopener noreferrer" className="btn-secondary">
                 <Video className="h-4 w-4" aria-hidden="true" />
                 Watch video
               </a>
@@ -172,9 +178,9 @@ export default async function ProjectDetailPage({
             <div className="card">
               <h2 className="text-sm font-semibold text-white">{project.title} — about this project</h2>
               <p className="mt-3 text-sm leading-relaxed text-slate-400">{project.summary}</p>
-              {project.externalUrl ? (
+              {externalUrl ? (
                 <a
-                  href={project.externalUrl}
+                  href={externalUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn-primary mt-5 w-full"

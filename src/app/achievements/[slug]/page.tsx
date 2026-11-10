@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { buildMetadata } from "@/lib/seo";
 import { ACHIEVEMENT_CATEGORIES } from "@/lib/constants";
 import { VideoPlayer, isLocalVideo } from "@/components/ui/VideoPlayer";
+import { safeHref } from "@/lib/safe-url";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -40,6 +41,11 @@ export default async function AchievementDetailPage({
   const gallery: { url: string; alt?: string }[] = Array.isArray(achievement.gallery)
     ? (achievement.gallery as { url: string; alt?: string }[])
     : [];
+  const externalUrl = achievement.externalUrl ? safeHref(achievement.externalUrl, "") : "";
+  const externalVideo =
+    achievement.videoUrl && !isLocalVideo(achievement.videoUrl)
+      ? safeHref(achievement.videoUrl, "")
+      : "";
 
   return (
     <article>
@@ -71,14 +77,14 @@ export default async function AchievementDetailPage({
           <h1 className="h-display mt-4 max-w-3xl">{achievement.title}</h1>
           <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-300">{achievement.description}</p>
           <div className="mt-6 flex flex-wrap gap-3">
-            {achievement.externalUrl ? (
-              <a href={achievement.externalUrl} target="_blank" rel="noopener noreferrer" className="btn-primary">
+            {externalUrl ? (
+              <a href={externalUrl} target="_blank" rel="noopener noreferrer" className="btn-primary">
                 Learn more
                 <ExternalLink className="h-4 w-4" aria-hidden="true" />
               </a>
             ) : null}
-            {achievement.videoUrl && !isLocalVideo(achievement.videoUrl) ? (
-              <a href={achievement.videoUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary">
+            {externalVideo ? (
+              <a href={externalVideo} target="_blank" rel="noopener noreferrer" className="btn-secondary">
                 <Video className="h-4 w-4" aria-hidden="true" />
                 Watch video
               </a>

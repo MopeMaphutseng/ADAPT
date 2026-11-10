@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { json, handleRouteError, requireAdminUser } from "@/lib/api-auth";
+import { enumParam, textParam } from "@/lib/query";
+import { ConversationKind, ConversationStatus } from "@prisma/client";
 
 export const runtime = "nodejs";
 
@@ -9,15 +11,15 @@ export async function GET(req: NextRequest) {
   try {
     await requireAdminUser(req, "comms.manage");
     const url = new URL(req.url);
-    const status = url.searchParams.get("status")?.trim() || undefined;
-    const kind = url.searchParams.get("kind")?.trim() || undefined;
-    const q = url.searchParams.get("q")?.trim() || undefined;
+    const status = enumParam(url.searchParams.get("status"), Object.values(ConversationStatus));
+    const kind = enumParam(url.searchParams.get("kind"), Object.values(ConversationKind));
+    const q = textParam(url.searchParams.get("q"));
     const unreadOnly = url.searchParams.get("unread") === "true";
 
     const conversations = await prisma.conversation.findMany({
       where: {
-        ...(status ? { status: status as never } : {}),
-        ...(kind ? { kind: kind as never } : {}),
+        ...(status ? { status } : {}),
+        ...(kind ? { kind } : {}),
         ...(unreadOnly ? { unreadForAdmin: true } : {}),
         ...(q
           ? {

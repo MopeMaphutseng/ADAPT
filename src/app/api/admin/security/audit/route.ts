@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { json, handleRouteError, requireAdminUser } from "@/lib/api-auth";
+import { textParam } from "@/lib/query";
 
 export const runtime = "nodejs";
 
@@ -10,9 +11,9 @@ export async function GET(req: NextRequest) {
     await requireAdminUser(req, "security.manage");
 
     const url = new URL(req.url);
-    const action = url.searchParams.get("action")?.trim() || undefined;
-    const userId = url.searchParams.get("userId")?.trim() || undefined;
-    const q = url.searchParams.get("q")?.trim() || undefined;
+    const action = textParam(url.searchParams.get("action"), 80);
+    const userId = textParam(url.searchParams.get("userId"), 40);
+    const q = textParam(url.searchParams.get("q"));
     const take = Math.min(200, Math.max(1, parseInt(url.searchParams.get("take") ?? "100", 10) || 100));
 
     const logs = await prisma.activityLog.findMany({
