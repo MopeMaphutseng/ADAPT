@@ -1,6 +1,6 @@
-import { PrismaClient } from "@prisma/client";
+import "dotenv/config";
+import { prisma } from "../src/lib/db";
 
-const prisma = new PrismaClient();
 
 const R2_VIDEO =
   "https://pub-5e36ee3324934ff880a239ac12e4564d.r2.dev/pula-maliboho.mp4";

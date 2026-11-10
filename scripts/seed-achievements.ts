@@ -1,6 +1,7 @@
-import { PrismaClient, AchievementCategory } from "@prisma/client";
+import "dotenv/config";
+import { AchievementCategory } from "@prisma/client";
+import { prisma } from "../src/lib/db";
 
-const prisma = new PrismaClient();
 
 const ACHIEVEMENTS = [
   {

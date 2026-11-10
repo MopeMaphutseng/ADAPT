@@ -1,6 +1,6 @@
-import { PrismaClient } from "@prisma/client";
+import "dotenv/config";
+import { prisma } from "../src/lib/db";
 
-const prisma = new PrismaClient();
 
 const VIDEO_URL =
   process.env.VIDEO_URL ??

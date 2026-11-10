@@ -1,9 +1,10 @@
-import { PrismaClient, RoleName, ProjectStatus } from "@prisma/client";
+import "dotenv/config";
+import { RoleName, ProjectStatus } from "@prisma/client";
+import { prisma } from "../src/lib/db";
 import { hashPassword } from "../src/lib/password";
 import { getDefaultContent } from "../src/lib/settings";
 import { SEED_PROJECTS } from "../src/lib/constants";
 
-const prisma = new PrismaClient();
 
 const ROLES: { name: RoleName; description: string; permissions: string[] }[] = [
   {
