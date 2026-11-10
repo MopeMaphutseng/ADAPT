@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { SERVICE_GROUPS, SEED_PROJECTS, ACHIEVEMENT_CATEGORIES } from "@/lib/constants";
 import { slugify } from "@/lib/slugify";
+import { siteUrl } from "@/lib/env";
 
 export interface SearchDocument {
   id: string;
@@ -27,8 +28,7 @@ export async function buildIndex(): Promise<SearchDocument[]> {
   }
 
   const docs: SearchDocument[] = [];
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-  const b = base.replace(/\/$/, "");
+  const b = siteUrl();
 
   // Static pages
   const pages: Array<{ title: string; url: string; text: string; keys?: string[] }> = [

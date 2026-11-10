@@ -1,4 +1,5 @@
 import { SEO_KEYWORDS } from "@/lib/constants";
+import { siteUrl as getSiteUrl } from "@/lib/env";
 
 export const SITE_DESCRIPTION =
   "ADAPT Technologies is an African technology and engineering company based in Lesotho — building intelligent software, hardware, automation and emerging technologies that solve real-world problems. Local Talent. Global Vision.";
@@ -10,7 +11,7 @@ export function buildMetadata(meta: {
   image?: string;
   type?: "website" | "article";
 }) {
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const siteUrl = getSiteUrl();
   const canonical = `${siteUrl}${meta.path}`;
   const image = meta.image
     ? meta.image.startsWith("http")

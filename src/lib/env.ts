@@ -16,8 +16,15 @@ export const isProduction = process.env.NODE_ENV === "production";
 export const sessionSecret = () => getRequiredEnv("SESSION_SECRET");
 export const sessionCookieName = () => getEnv("SESSION_COOKIE", "adapt_session");
 export const contactEmail = () => getEnv("CONTACT_EMAIL", "pulamaliboho@gmail.com");
-export const siteUrl = () =>
-  getEnv("NEXT_PUBLIC_SITE_URL", "http://localhost:3000").replace(/\/$/, "");
+export const siteUrl = () => {
+  const explicit = process.env.NEXT_PUBLIC_SITE_URL;
+  if (explicit) return explicit.replace(/\/$/, "");
+  const prod = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  if (prod) return `https://${prod}`.replace(/\/$/, "");
+  const vercel = process.env.VERCEL_URL;
+  if (vercel) return `https://${vercel}`.replace(/\/$/, "");
+  return "http://localhost:3000";
+};
 
 export function validateEnv(minimal = false) {
   const missing = required.filter((k) => !process.env[k]);

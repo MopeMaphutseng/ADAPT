@@ -7,6 +7,7 @@ import { PageTracker } from "@/components/analytics/PageTracker";
 import { AnalyticsScripts } from "@/components/analytics/AnalyticsScripts";
 import { getAllSettings } from "@/lib/settings";
 import { SITE_DESCRIPTION } from "@/lib/seo";
+import { siteUrl } from "@/lib/env";
 
 const fontSans = Inter({
   subsets: ["latin"],
@@ -32,7 +33,7 @@ export const metadata: Metadata = {
     template: "%s | ADAPT Technologies",
   },
   description: SITE_DESCRIPTION,
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(siteUrl()),
   icons: {
     icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
   },
