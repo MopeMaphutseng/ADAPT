@@ -89,7 +89,7 @@ export function AdminSettingsPage() {
             <li className="flex gap-3"><span className="shrink-0 text-accent-400">·</span> Sign-in requires a valid administrator account.</li>
             <li className="flex gap-3"><span className="shrink-0 text-accent-400">·</span> Roles control what each user can see and edit in this dashboard.</li>
             <li className="flex gap-3"><span className="shrink-0 text-accent-400">·</span> Public content changes publish instantly and are logged for audit.</li>
-            <li className="flex gap-3"><span className="shrink-0 text-accent-400">·</span> For password resets, a Super Admin can set a user's password from the Users page.</li>
+            <li className="flex gap-3"><span className="shrink-0 text-accent-400">·</span> For password resets, a Super Admin can set a user&apos;s password from the Users page.</li>
           </ul>
         </div>
       </div>

@@ -39,7 +39,7 @@ describe("authentication gate", () => {
   });
 
   it("blocks role escalation not backed by the DB", async () => {
-    const { user } = await seedAdmin();
+    await seedAdmin();
     const comms = await seedRoleUser("COMMS_ADMIN", "comm@adapt.test");
     // Forge a token claiming SUPER_ADMIN for a user that is really COMMS_ADMIN.
     const forged = await tokenFor(comms.id, "SUPER_ADMIN", "comm@adapt.test");

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ImageOff, ArrowRight, Play } from "lucide-react";
-import { PROJECT_STATUSES, ACHIEVEMENT_CATEGORIES } from "@/lib/constants";
+import { ACHIEVEMENT_CATEGORIES } from "@/lib/constants";
 import type { Project, Achievement } from "@prisma/client";
 import { VideoBackdrop, isLocalVideo } from "@/components/ui/VideoPlayer";
 import { safeHref } from "@/lib/safe-url";
@@ -57,8 +57,6 @@ function formatDate(value: Date | string | null): string {
 }
 
 export function ProjectCard({ project }: { project: Project }) {
-  const statusLabel =
-    PROJECT_STATUSES.find((s) => s.value === project.status)?.label ?? project.status;
   const href = `/projects/${project.slug}`;
   const external = project.externalUrl ? safeHref(project.externalUrl, "") : "";
   return (

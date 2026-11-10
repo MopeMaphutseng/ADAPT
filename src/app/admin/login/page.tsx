@@ -20,7 +20,7 @@ export default function AdminLoginPage() {
     setBusy(true);
     setError("");
     try {
-      const res = await api<{ user: { role: string } }>("/api/auth/login", {
+      await api<{ user: { role: string } }>("/api/auth/login", {
         body: { email, password },
       });
       router.push("/admin");

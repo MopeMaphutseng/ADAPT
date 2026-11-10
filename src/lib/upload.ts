@@ -3,6 +3,7 @@ import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import sharp from "sharp";
 import { ApiError } from "@/lib/api-auth";
+import { isR2Configured, putImageObject } from "@/lib/storage";
 
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
 const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8 MB
@@ -13,10 +14,9 @@ const ALLOWED_TYPES = new Map<string, string>([
   ["image/avif", ".avif"],
   ["image/gif", ".gif"],
 ]);
-const EXIF_MIME_HINTS = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 
 export interface ProcessedImage {
-  url: string;
+  buffer: Buffer;
   filename: string;
   mimeType: string;
   size: number;
@@ -25,8 +25,8 @@ export interface ProcessedImage {
 }
 
 /**
- * Validates and optimises an uploaded image, saving a compressed, web-safe copy.
- * Rejects dangerous or oversized files before anything is written.
+ * Validates and optimises an uploaded image in memory. Nothing is persisted
+ * until `storeProcessedImage` is called.
  */
 export async function processImageUpload(
   file: File,
@@ -51,16 +51,15 @@ export async function processImageUpload(
 
   const buf = Buffer.from(await file.arrayBuffer());
 
-  // Verify actual content signatures (defence against spoofed MIME types).
-  const sniffedWarn = ALLOWED_TYPES.has(declaredMime) ? declaredMime : "";
   const isGif = buf.slice(0, 6).toString("binary").startsWith("GIF");
   if (isGif && declaredMime !== "image/gif") {
     throw new ApiError(400, "File content does not match its declared type.");
   }
 
-  const extension = isGif ? ".gif" : (ALLOWED_TYPES.get(declaredMime) ?? (path.extname(file.name).toLowerCase() || ".jpg"));
+  const extension = isGif
+    ? ".gif"
+    : (ALLOWED_TYPES.get(declaredMime) ?? (path.extname(file.name).toLowerCase() || ".jpg"));
   const safeName = `${Date.now()}-${randomBytes(12).toString("hex")}${extension}`;
-  await mkdir(UPLOAD_DIR, { recursive: true });
 
   let output: Buffer;
   let width = 0;
@@ -98,15 +97,36 @@ export async function processImageUpload(
     }
   }
 
-  const finalName = finalMime === declaredMime || isGif ? safeName : safeName.replace(extension, ".webp");
-  await writeFile(path.join(UPLOAD_DIR, finalName), output);
+  const finalName =
+    finalMime === declaredMime || isGif ? safeName : safeName.replace(extension, ".webp");
 
   return {
-    url: `/uploads/${finalName}`,
+    buffer: output,
     filename: finalName,
     mimeType: isGif ? "image/gif" : finalMime,
     size: output.length,
     width,
     height,
   };
+}
+
+/**
+ * Persists an optimised image. Uses R2 when configured (required on Vercel),
+ * otherwise falls back to the local `public/uploads` directory for development.
+ */
+export async function storeProcessedImage(
+  processed: ProcessedImage,
+): Promise<{ url: string; filename: string }> {
+  if (isR2Configured()) {
+    const url = await putImageObject(
+      `media/${processed.filename}`,
+      processed.buffer,
+      processed.mimeType,
+    );
+    return { url, filename: processed.filename };
+  }
+
+  await mkdir(UPLOAD_DIR, { recursive: true });
+  await writeFile(path.join(UPLOAD_DIR, processed.filename), processed.buffer);
+  return { url: `/uploads/${processed.filename}`, filename: processed.filename };
 }

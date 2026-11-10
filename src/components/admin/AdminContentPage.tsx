@@ -238,7 +238,7 @@ export function AdminContentPage() {
     setSaveMsg("");
     try {
       const { analytics, ...rest } = content;
-      const patchValue: Record<string, unknown> = { ...rest[tab] };
+      const patchValue: Record<string, unknown> = { ...(rest[tab] as Record<string, unknown> | undefined) };
       if (tab === "roadmap" && typeof patchValue.phases === "string") {
         try {
           patchValue.phases = JSON.parse(patchValue.phases as string);
@@ -249,9 +249,9 @@ export function AdminContentPage() {
         }
       }
       if (tab === "analytics") {
-        patchValue.enabled = (rest as any).analytics?.enabled ?? false;
-        patchValue.provider = (rest as any).analytics?.provider ?? "";
-        patchValue.scriptId = (rest as any).analytics?.scriptId ?? "";
+        patchValue.enabled = analytics?.enabled ?? false;
+        patchValue.provider = analytics?.provider ?? "";
+        patchValue.scriptId = analytics?.scriptId ?? "";
       }
       await api("/api/admin/settings", { method: "PUT", body: { key: tab, value: patchValue } });
       setSaveMsg("Saved.");

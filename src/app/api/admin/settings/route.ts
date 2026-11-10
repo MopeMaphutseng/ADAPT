@@ -1,5 +1,4 @@
 import { NextRequest } from "next/server";
-import { prisma } from "@/lib/db";
 import { json, handleRouteError, requireAdminUser } from "@/lib/api-auth";
 import { assertSameOrigin } from "@/lib/csrf";
 import { getAllSettings, upsertSetting, SETTING_KEYS } from "@/lib/settings";

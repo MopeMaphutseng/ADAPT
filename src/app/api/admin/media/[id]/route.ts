@@ -6,6 +6,7 @@ import { json, handleRouteError, requireAdminUser, ApiError } from "@/lib/api-au
 import { assertSameOrigin } from "@/lib/csrf";
 import { idParam } from "@/lib/validation";
 import { logActivity } from "@/lib/audit";
+import { deleteImageObjectByUrl } from "@/lib/storage";
 
 export const runtime = "nodejs";
 
@@ -18,7 +19,9 @@ export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: stri
     const media = await prisma.media.findUnique({ where: { id } });
     if (!media) throw new ApiError(404, "Media not found.");
 
-    if (media.url.startsWith("/uploads/")) {
+    if (!media.url.startsWith("/uploads/")) {
+      await deleteImageObjectByUrl(media.url);
+    } else {
       const uploadsRoot = path.resolve(process.cwd(), "public", "uploads");
       const abs = path.resolve(process.cwd(), "public", media.url.replace(/^\//, ""));
       if (abs.startsWith(uploadsRoot + path.sep)) {

@@ -98,7 +98,7 @@ export async function searchSite(query: string): Promise<SearchResponse> {
       score: d.score,
     }));
     return { query: q, answer: String(parsed?.answer ?? "").trim(), provider, results };
-  } catch (err) {
+  } catch {
     // Fallback to keyword results
     const chosen = shortlist.slice(0, 5);
     const results = chosen.map<SearchResultItem>((d) => ({

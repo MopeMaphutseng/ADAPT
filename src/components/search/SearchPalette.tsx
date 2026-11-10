@@ -46,7 +46,7 @@ export function SearchPalette({ open, onClose }: { open: boolean; onClose: () =>
   const resultsRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<number | null>(null);
 
-  const results = data?.results ?? [];
+  const results = useMemo(() => data?.results ?? [], [data]);
 
   const doSearch = useCallback(async (q: string) => {
     const s = q.trim();

@@ -130,7 +130,7 @@ export function AdminShell({
       <aside className="hidden w-64 shrink-0 border-r border-slate-800 bg-ink-900/50 lg:flex lg:flex-col">
         <div className="border-b border-slate-800 px-5 py-5">
           <Link href="/admin" className="block">
-            <p className="text-lg font-bold tracking-[0.12em] text-white">ADAPT<span className="text-accent-400">//</span>ADMIN</p>
+            <p className="text-lg font-bold tracking-[0.12em] text-white">ADAPT<span className="text-accent-400">{"//"}</span>ADMIN</p>
             <p className="mt-0.5 text-xs text-slate-500">Management Platform</p>
           </Link>
         </div>
@@ -140,7 +140,7 @@ export function AdminShell({
       {/* Mobile topbar */}
       <div className="sticky top-0 z-40 flex items-center justify-between border-b border-slate-800 bg-ink-950/95 px-4 py-3 backdrop-blur lg:hidden">
         <p className="text-base font-bold tracking-[0.12em] text-white">
-          ADAPT<span className="text-accent-400">//</span>ADMIN
+          ADAPT<span className="text-accent-400">{"//"}</span>ADMIN
         </p>
         <button
           type="button"

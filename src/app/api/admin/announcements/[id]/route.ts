@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { json, handleRouteError, requireAdminUser, ApiError } from "@/lib/api-auth";
 import { assertSameOrigin } from "@/lib/csrf";
 import { announcementSchema, parseDateParam, idParam } from "@/lib/validation";
-import { uniqueSlug, slugify } from "@/lib/slugify";
+import { slugify } from "@/lib/slugify";
 import { logActivity } from "@/lib/audit";
 
 export const runtime = "nodejs";

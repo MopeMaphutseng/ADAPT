@@ -1,5 +1,5 @@
 // AI provider abstraction for search (OpenAI-compatible). NVIDIA is primary.
-import { getEnv, isProduction } from "@/lib/env";
+import { getEnv } from "@/lib/env";
 
 export type ChatRole = "system" | "user" | "assistant";
 

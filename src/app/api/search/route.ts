@@ -1,6 +1,4 @@
 import { NextRequest } from "next/server";
-import { z } from "zod";
-import { prisma } from "@/lib/db";
 import { json, handleRouteError } from "@/lib/api-auth";
 import { assertSameOrigin } from "@/lib/csrf";
 import { rateLimit, ipFromRequest } from "@/lib/rate-limit";

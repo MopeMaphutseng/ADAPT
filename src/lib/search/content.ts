@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/db";
-import { SERVICE_GROUPS, SEED_PROJECTS, ACHIEVEMENT_CATEGORIES } from "@/lib/constants";
-import { slugify } from "@/lib/slugify";
+import { SERVICE_GROUPS, SEED_PROJECTS } from "@/lib/constants";
 import { siteUrl } from "@/lib/env";
 
 export interface SearchDocument {
@@ -92,7 +91,7 @@ export async function buildIndex(): Promise<SearchDocument[]> {
         snippet: p.summary,
       });
     }
-  } catch (e) {
+  } catch {
     // Fallback to constants if DB not ready
     for (const p of SEED_PROJECTS) {
       const url = `${b}/projects/${p.slug}`;
@@ -130,7 +129,7 @@ export async function buildIndex(): Promise<SearchDocument[]> {
         snippet: a.description,
       });
     }
-  } catch (e) {
+  } catch {
     // ignore
   }
 

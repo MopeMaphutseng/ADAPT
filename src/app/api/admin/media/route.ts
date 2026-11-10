@@ -1,9 +1,7 @@
 import { NextRequest } from "next/server";
-import { unlink } from "fs/promises";
-import path from "path";
 import { prisma } from "@/lib/db";
 import { json, handleRouteError, requireAdminUser, ApiError } from "@/lib/api-auth";
-import { processImageUpload } from "@/lib/upload";
+import { processImageUpload, storeProcessedImage } from "@/lib/upload";
 import { logActivity } from "@/lib/audit";
 import { z } from "zod";
 
@@ -34,15 +32,16 @@ export async function POST(req: NextRequest) {
     if (!parsedAlt.success) throw new ApiError(400, "Invalid alt text.");
 
     const processed = await processImageUpload(file);
+    const stored = await storeProcessedImage(processed);
     const record = await prisma.media.create({
       data: {
-        filename: processed.filename,
+        filename: stored.filename,
         originalName: file.name.slice(0, 255),
         mimeType: processed.mimeType,
         size: processed.size,
         width: processed.width,
         height: processed.height,
-        url: processed.url,
+        url: stored.url,
         alt: parsedAlt.data.alt || null,
         uploadedById: user.id,
       },
