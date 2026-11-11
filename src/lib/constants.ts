@@ -121,6 +121,23 @@ export const SERVICE_GROUPS: ServiceGroup[] = [
     icon: "leaf",
   },
   {
+    slug: "climate-environment",
+    title: "Climate & Environmental Intelligence",
+    description:
+      "Climate modeling, Earth observation and geospatial intelligence for resilience, adaptation and sustainable development.",
+    items: [
+      "Climate modeling",
+      "Earth observation",
+      "Geospatial analytics",
+      "Environmental monitoring",
+      "Digital twins",
+      "Hazard & risk simulation",
+      "Water & climate resilience",
+      "Carbon & emissions analytics",
+    ],
+    icon: "globe",
+  },
+  {
     slug: "education-technology",
     title: "Education Technology",
     description:

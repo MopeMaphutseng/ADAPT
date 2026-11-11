@@ -33,7 +33,7 @@ export async function buildIndex(): Promise<SearchDocument[]> {
   const pages: Array<{ title: string; url: string; text: string; keys?: string[] }> = [
     { title: "Home", url: `${b}/`, text: "Home ADAPT Technologies intelligent software hardware engineering Africa Lesotho", keys: ["home"] },
     { title: "About", url: `${b}/about`, text: "About founder Mope Samuel Maphutseng vision Africa build technology", keys: ["about", "founder", "team"] },
-    { title: "Services", url: `${b}/services`, text: "AI software embedded IoT robotics cybersecurity automation agriculture education technology consulting", keys: ["services"] },
+    { title: "Services", url: `${b}/services`, text: "AI software embedded IoT robotics cybersecurity automation climate modeling earth observation geospatial climate resilience agriculture education technology consulting", keys: ["services", "climate", "climate modeling"] },
     { title: "Projects", url: `${b}/projects`, text: "Projects portfolio", keys: ["projects", "portfolio"] },
     { title: "Achievements", url: `${b}/achievements`, text: "Achievements milestones news", keys: ["achievements"] },
     { title: "Investors", url: `${b}/investors`, text: "Invest in ADAPT Technologies", keys: ["investors", "funding"] },

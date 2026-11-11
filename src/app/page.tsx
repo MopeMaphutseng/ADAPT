@@ -401,9 +401,9 @@ export default async function HomePage() {
             title="Full-stack technology & engineering services"
             align="center"
           />
-          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {SERVICE_GROUPS.map((s, i) => (
-              <Reveal key={s.slug} delay={(i % 4) * 80}>
+              <Reveal key={s.slug} delay={(i % 3) * 80}>
                 <Link
                   href={`/services#${s.slug}`}
                   className="card hud-frame card-grid group block h-full"

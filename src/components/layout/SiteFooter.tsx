@@ -53,7 +53,7 @@ export function SiteFooter({ settings }: { settings: SiteContent }) {
           <nav aria-label="Footer — capabilities">
             <h2 className="font-mono text-[0.8125rem] uppercase tracking-[0.22em] text-slate-400">Capabilities</h2>
             <ul className="mt-4 space-y-2.5">
-              {SERVICE_GROUPS.slice(0, 7).map((s) => (
+              {SERVICE_GROUPS.map((s) => (
                 <li key={s.slug}>
                   <Link href={`/services#${s.slug}`} className="group inline-flex items-center gap-1.5 text-[0.9375rem] text-slate-300 transition-colors hover:text-white">
                     <span className="h-px w-0 bg-cyanx transition-all duration-300 group-hover:w-3" />
