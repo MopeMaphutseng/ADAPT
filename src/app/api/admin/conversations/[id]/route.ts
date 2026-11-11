@@ -64,3 +64,25 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
     return handleRouteError(err);
   }
 }
+
+export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  try {
+    const user = await requireAdminUser(req, "comms.manage");
+    assertSameOrigin(req);
+    const { id } = await ctx.params;
+    const existing = await prisma.conversation.findUnique({ where: { id } });
+    if (!existing) return json({ ok: false, error: "Conversation not found." }, 404);
+
+    await prisma.conversation.delete({ where: { id } });
+    await logActivity({
+      userId: user.id,
+      action: "conversation.delete",
+      entity: "conversation",
+      entityId: id,
+      meta: { subject: existing.subject },
+    });
+    return json({ ok: true, data: { id } });
+  } catch (err) {
+    return handleRouteError(err);
+  }
+}
